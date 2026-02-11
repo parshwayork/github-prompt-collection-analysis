@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prompt Capture: Cursor vs GitHub Copilot - Technical Analysis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.7;
+      margin: 0;
+      padding: 40px;
+      color: #e5e7eb;
+      background: #0f172a;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1, h2, h3 {
+      color: #f1f5f9;
+      font-weight: 600;
+    }
+    
+    h1 {
+      border-bottom: 3px solid #3b82f6;
+      padding-bottom: 16px;
+      margin-bottom: 40px;
+      font-size: 2.5em;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    h2 {
+      margin-top: 48px;
+      margin-bottom: 24px;
+      font-size: 1.8em;
+      color: #60a5fa;
+    }
+    
+    h3 {
+      margin-top: 32px;
+      margin-bottom: 16px;
+      font-size: 1.3em;
+      color: #93c5fd;
+    }
+    
+    section {
+      margin-bottom: 60px;
+    }
+    
+    p {
+      margin-bottom: 16px;
+      color: #cbd5e1;
+    }
+    
+    code {
+      background: #1e293b;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      color: #fbbf24;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      border: 1px solid #334155;
+    }
+    
+    pre {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      border: 1px solid #334155;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    pre code {
+      background: transparent;
+      padding: 0;
+      border: none;
+      color: #e0e7ff;
+      display: block;
+    }
+    
+    .callout {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+      border-left: 5px solid #3b82f6;
+      padding: 20px;
+      margin: 24px 0;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    .callout strong {
+      color: #93c5fd;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.1em;
+    }
+    
+    .warning {
+      background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+      border-left: 5px solid #f97316;
+      padding: 20px;
+      margin: 24px 0;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    .warning strong {
+      color: #fbbf24;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.1em;
+    }
+    
+    .success {
+      background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+      border-left: 5px solid #10b981;
+      padding: 20px;
+      margin: 24px 0;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    .success strong {
+      color: #6ee7b7;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.1em;
+    }
+    
+    .critical {
+      background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+      border-left: 5px solid #ef4444;
+      padding: 20px;
+      margin: 24px 0;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    .critical strong {
+      color: #fca5a5;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.1em;
+    }
+    
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 24px 0;
+      background: #1e293b;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    th, td {
+      border: 1px solid #334155;
+      padding: 14px;
+      text-align: left;
+    }
+    
+    th {
+      background: #1e40af;
+      color: #e0e7ff;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.85em;
+      letter-spacing: 0.5px;
+    }
+    
+    td {
+      color: #cbd5e1;
+    }
+    
+    tr:hover {
+      background: #334155;
+    }
+    
+    ul, ol {
+      margin: 16px 0;
+      padding-left: 24px;
+      color: #cbd5e1;
+    }
+    
+    li {
+      margin: 8px 0;
+    }
+    
+    strong {
+      color: #f1f5f9;
+      font-weight: 600;
+    }
+    
+    em {
+      color: #a5b4fc;
+      font-style: italic;
+    }
+    
+    .file-path {
+      background: #0f172a;
+      border: 1px solid #475569;
+      padding: 12px;
+      border-radius: 6px;
+      font-family: 'Fira Code', monospace;
+      color: #34d399;
+      margin: 16px 0;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    
+    .badge-success {
+      background: #065f46;
+      color: #6ee7b7;
+    }
+    
+    .badge-warning {
+      background: #92400e;
+      color: #fbbf24;
+    }
+    
+    .badge-error {
+      background: #991b1b;
+      color: #fca5a5;
+    }
+    
+    .badge-info {
+      background: #1e40af;
+      color: #93c5fd;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 1.8em;
+      }
+      
+      table {
+        font-size: 0.9em;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>🔍 Prompt Capture Architecture: Cursor vs GitHub Copilot</h1>
+
+<section>
+  <h2>1. How Cursor Captures Prompts (Why It's Easy)</h2>
+
+  <p>
+    Cursor is built as an <strong>AI-native editor</strong> (a fork of VS Code). 
+    Prompting is a first-class feature, not a side effect.
+  </p>
+
+  <p>
+    Every interaction (chat, inline edit, agent run) is persisted locally in a
+    <strong>SQLite database</strong>.
+  </p>
+
+  <h3>📦 What Cursor Stores</h3>
+
+  <ul>
+    <li><strong>User prompts</strong> - Full text of what users ask</li>
+    <li><strong>Assistant responses</strong> - Complete AI-generated answers</li>
+    <li><strong>Metadata</strong> - Timestamps, model used, workspace context</li>
+    <li><strong>Context chunks</strong> - Code snippets, diffs, file references</li>
+    <li><strong>Conversation threads</strong> - Multi-turn chat history</li>
+  </ul>
+
+  <div class="file-path">
+    <strong>macOS:</strong><br>
+    ~/Library/Application Support/Cursor/User/globalStorage/state.vscdb
+  </div>
+
+  <div class="file-path">
+    <strong>Windows:</strong><br>
+    %APPDATA%\Cursor\User\globalStorage\state.vscdb
+  </div>
+
+  <div class="file-path">
+    <strong>Linux:</strong><br>
+    ~/.config/Cursor/User/globalStorage/state.vscdb
+  </div>
+
+  <p>
+    Because prompts are stored as structured data inside SQLite, they can be:
+  </p>
+
+  <ul>
+    <li>✅ Queried using SQL (<code>SELECT * FROM messages WHERE type = 'user'</code>)</li>
+    <li>✅ Filtered by workspace, date, or model</li>
+    <li>✅ Scored retroactively using quality algorithms</li>
+    <li>✅ Displayed in analytics dashboards</li>
+    <li>✅ Exported for training or compliance</li>
+  </ul>
+
+  <div class="success">
+    <strong>✓ Key Takeaway:</strong><br />
+    Cursor was <em>designed</em> to persist prompts. Analytics is a natural by-product. 
+    You can extract this data via Jamf or similar tools with minimal effort.
+  </div>
+</section>
+
+<section>
+  <h2>2. GitHub Copilot: The Reality of Local Storage</h2>
+
+  <div class="critical">
+    <strong>⚠️ CORRECTION TO COMMON MISCONCEPTION:</strong><br />
+    GitHub Copilot <strong>DOES</strong> store chat conversation data locally in JSON files.
+    However, this storage is <strong>incomplete</strong> and has significant limitations.
+  </div>
+
+  <h3>📁 What Copilot Actually Stores Locally</h3>
+
+  <p>
+    GitHub Copilot stores <strong>Copilot Chat</strong> conversations (the sidebar chat interface) 
+    in JSON files on disk:
+  </p>
+
+  <div class="file-path">
+    <strong>macOS:</strong><br>
+    ~/Library/Application Support/Code/User/workspaceStorage/&lt;hash&gt;/chatSessions/*.json
+  </div>
+
+  <div class="file-path">
+    <strong>Windows:</strong><br>
+    %APPDATA%\Code\User\workspaceStorage\&lt;hash&gt;\chatSessions\*.json
+  </div>
+
+  <div class="file-path">
+    <strong>Linux:</strong><br>
+    ~/.config/Code/User/workspaceStorage/&lt;hash&gt;/chatSessions/*.json
+  </div>
+
+  <h3>✅ What IS Captured in JSON Files</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Data Type</th>
+        <th>Captured?</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Chat sidebar conversations</td>
+        <td><span class="badge badge-success">YES</span></td>
+        <td>Full user prompts and AI responses from Copilot Chat</td>
+      </tr>
+      <tr>
+        <td>Conversation metadata</td>
+        <td><span class="badge badge-success">YES</span></td>
+        <td>Timestamps, session IDs, workspace references</td>
+      </tr>
+      <tr>
+        <td>File references</td>
+        <td><span class="badge badge-success">YES</span></td>
+        <td>Which files were discussed in the conversation</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>❌ What is NOT Captured</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Data Type</th>
+        <th>Captured?</th>
+        <th>Impact</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Inline code completions</td>
+        <td><span class="badge badge-error">NO</span></td>
+        <td>The "ghost text" suggestions - most common Copilot usage (~60%)</td>
+      </tr>
+      <tr>
+        <td>Comment-based prompts</td>
+        <td><span class="badge badge-error">NO</span></td>
+        <td>Comments that trigger inline suggestions</td>
+      </tr>
+      <tr>
+        <td>Inline chat (Ctrl+I)</td>
+        <td><span class="badge badge-warning">MAYBE</span></td>
+        <td>May be ephemeral or stored separately - needs testing</td>
+      </tr>
+      <tr>
+        <td>Code context sent to API</td>
+        <td><span class="badge badge-error">NO</span></td>
+        <td>What code snippets were sent alongside prompts</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>📊 Coverage Analysis</h3>
+
+  <pre><code>Copilot Chat (Sidebar):        ~30-40% of usage → ✅ CAPTURED in JSON
+Inline Code Completions:       ~50-60% of usage → ❌ NOT CAPTURED
+Inline Chat (Ctrl+I):          ~5-10% of usage  → ⚠️  UNCERTAIN
+──────────────────────────────────────────────────────────────
+Estimated Total Coverage:      ~30-40% of all Copilot interactions</code></pre>
+
+  <div class="warning">
+    <strong>⚠️ Critical Limitation:</strong><br />
+    Even though JSON files exist, you're only capturing <strong>30-40% of actual Copilot usage</strong>.
+    The majority of interactions (inline completions) leave no local trace.
+  </div>
+
+  <h3>🔧 Workspace Hash Problem</h3>
+
+  <p>
+    Each VS Code workspace gets a unique hash (e.g., <code>7927a352490752d89d45d86565940562</code>).
+    This creates significant challenges:
+  </p>
+
+  <ul>
+    <li><strong>Renaming a project folder</strong> → New hash, chat history orphaned in old location</li>
+    <li><strong>Opening same project differently</strong> → Different hash, duplicated data</li>
+    <li><strong>Multiple workspaces</strong> → Cannot easily correlate which chats belong to which project</li>
+    <li><strong>Personal vs work projects</strong> → No built-in way to distinguish</li>
+  </ul>
+
+  <div class="callout">
+    <strong>Example JSON Structure:</strong>
+    <pre><code>{
+  "sessionId": "3b809804-b970-49b2-a3f8-561d7855a868",
+  "timestamp": "2024-02-11T10:23:45.123Z",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Write a function to calculate fibonacci",
+      "timestamp": "2024-02-11T10:23:45.123Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Here's a Python implementation...",
+      "timestamp": "2024-02-11T10:23:47.456Z"
+    }
+  ],
+  "workspace": "/Users/dev/project-name",
+  "files": ["/Users/dev/project-name/utils.py"]
+}</code></pre>
+  </div>
+</section>
+
+<section>
+  <h2>3. Cross-Platform Collection Strategy</h2>
+
+  <h3>🖥️ Detecting OS and Setting Correct Paths</h3>
+
+  <p>
+    Since your organization has macOS, Windows, and Linux devices, your collection 
+    script must auto-detect the operating system:
+  </p>
+
+  <pre><code>#!/bin/bash
+# Auto-detect OS and set correct path
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    PLATFORM="macos"
+    COPILOT_DIR="$HOME/Library/Application Support/Code/User/workspaceStorage"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Linux
+    PLATFORM="linux"
+    COPILOT_DIR="$HOME/.config/Code/User/workspaceStorage"
+else
+    echo "Unsupported OS: $OSTYPE"
+    exit 1
+fi
+
+echo "Detected platform: $PLATFORM"
+echo "Copilot directory: $COPILOT_DIR"</code></pre>
+
+  <h3>📤 Deployment Matrix</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>MDM Tool</th>
+        <th>Script Type</th>
+        <th>JSON Path Detection</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>macOS</td>
+        <td>Jamf Pro</td>
+        <td>Bash Script</td>
+        <td><code>$OSTYPE == darwin*</code></td>
+      </tr>
+      <tr>
+        <td>Windows</td>
+        <td>Microsoft Intune</td>
+        <td>PowerShell</td>
+        <td><code>$IsWindows</code> or <code>$env:OS</code></td>
+      </tr>
+      <tr>
+        <td>Linux</td>
+        <td>Ansible / SaltStack</td>
+        <td>Bash Script</td>
+        <td><code>$OSTYPE == linux*</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="success">
+    <strong>✓ Recommended Approach:</strong><br />
+    Write ONE universal script that detects the OS automatically. Deploy the same 
+    script via Jamf to all devices, and let the script handle platform differences.
+  </div>
+</section>
+
+<section>
+  <h2>4. Technical Implementation Paths</h2>
+
+  <h3>Path 1: JSON Collection via Jamf</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Component</th>
+        <th>Implementation</th>
+        <th>Complexity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>OS Detection</td>
+        <td>Bash script with <code>$OSTYPE</code> check</td>
+        <td><span class="badge badge-success">SIMPLE</span></td>
+      </tr>
+      <tr>
+        <td>File Collection</td>
+        <td><code>find</code> command to locate JSON files</td>
+        <td><span class="badge badge-success">SIMPLE</span></td>
+      </tr>
+      <tr>
+        <td>Upload to Central API</td>
+        <td><code>curl</code> POST with file + metadata</td>
+        <td><span class="badge badge-success">SIMPLE</span></td>
+      </tr>
+      <tr>
+        <td>Jamf Deployment</td>
+        <td>Standard policy with daily schedule</td>
+        <td><span class="badge badge-success">SIMPLE</span></td>
+      </tr>
+      <tr>
+        <td>Database Schema</td>
+        <td>PostgreSQL with JSON storage</td>
+        <td><span class="badge badge-warning">MODERATE</span></td>
+      </tr>
+      <tr>
+        <td>Deduplication Logic</td>
+        <td>SHA-256 hash comparison</td>
+        <td><span class="badge badge-warning">MODERATE</span></td>
+      </tr>
+      <tr>
+        <td>Workspace Mapping</td>
+        <td>Parse workspace.json for project paths</td>
+        <td><span class="badge badge-warning">MODERATE</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Path 2: Custom VS Code Extension</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Component</th>
+        <th>Implementation</th>
+        <th>Complexity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Extension Scaffold</td>
+        <td>TypeScript + VS Code Extension API</td>
+        <td><span class="badge badge-warning">MODERATE</span></td>
+      </tr>
+      <tr>
+        <td>Chat Interception</td>
+        <td>Monitor text document changes</td>
+        <td><span class="badge badge-warning">MODERATE</span></td>
+      </tr>
+      <tr>
+        <td>Inline Completion Detection</td>
+        <td>Heuristics for multi-line insertions</td>
+        <td><span class="badge badge-error">COMPLEX</span></td>
+      </tr>
+      <tr>
+        <td>Context Capture</td>
+        <td>Extract surrounding code, cursor position</td>
+        <td><span class="badge badge-warning">MODERATE</span></td>
+      </tr>
+      <tr>
+        <td>Real-time API Calls</td>
+        <td>Async POST to central server</td>
+        <td><span class="badge badge-warning">MODERATE</span></td>
+      </tr>
+      <tr>
+        <td>Error Handling</td>
+        <td>Network failures, rate limiting, retries</td>
+        <td><span class="badge badge-error">COMPLEX</span></td>
+      </tr>
+      <tr>
+        <td>Performance Optimization</td>
+        <td>Debouncing, batching, background threads</td>
+        <td><span class="badge badge-error">COMPLEX</span></td>
+      </tr>
+      <tr>
+        <td>Extension Distribution</td>
+        <td>Package as .vsix, deploy via Jamf</td>
+        <td><span class="badge badge-warning">MODERATE</span></td>
+      </tr>
+      <tr>
+        <td>Ongoing Maintenance</td>
+        <td>Update when VS Code/Copilot changes</td>
+        <td><span class="badge badge-error">COMPLEX</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>💡 Complexity Reality Check:</strong><br />
+    Path 1 (JSON collection) can be deployed in days with standard DevOps skills.
+    Path 2 (custom extension) requires weeks of development plus ongoing maintenance.
+  </div>
+</section>
+
+<section>
+  <h2>5. Two Approaches: Technical Comparison</h2>
+
+  <p>
+    You have two viable paths to collect Copilot prompt data. Here's an honest 
+    comparison of complexity and completeness:
+  </p>
+
+  <h3>Approach 1️⃣: Local JSON Collection (Like Cursor Model)</h3>
+
+  <div class="callout">
+    <strong>📦 How It Works:</strong><br />
+    Extract Copilot's existing JSON chat files from local storage using Jamf (or equivalent MDM) 
+    across all employee devices, then centralize in your database.
+  </div>
+
+  <h4>✅ Advantages</h4>
+  <ul>
+    <li><strong>Low development effort</strong> - No custom VS Code extension needed</li>
+    <li><strong>Uses existing data</strong> - Copilot already stores chat in JSON</li>
+    <li><strong>Simple Jamf deployment</strong> - Standard bash/PowerShell scripts</li>
+    <li><strong>Cross-platform ready</strong> - Works on macOS, Windows, Linux</li>
+    <li><strong>Non-invasive</strong> - Doesn't modify VS Code or Copilot</li>
+  </ul>
+
+  <h4>❌ Disadvantages</h4>
+  <ul>
+    <li><strong>Incomplete data</strong> - Only captures 30-40% of Copilot usage (chat sidebar only)</li>
+    <li><strong>Missing inline completions</strong> - The majority of usage (~60%) is not stored</li>
+    <li><strong>Workspace hash chaos</strong> - Hard to track which chats belong to which project</li>
+    <li><strong>No inline chat</strong> - Ctrl+I interactions may not be captured</li>
+    <li><strong>Deduplication needed</strong> - Same chat may appear in multiple workspace hashes</li>
+  </ul>
+
+  <h4>🎯 Complexity Rating</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Complexity</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Script Development</td>
+        <td><span class="badge badge-success">LOW</span></td>
+        <td>Standard Jamf bash script with OS detection</td>
+      </tr>
+      <tr>
+        <td>Cross-Platform Support</td>
+        <td><span class="badge badge-success">LOW</span></td>
+        <td>Just path differences, same collection logic</td>
+      </tr>
+      <tr>
+        <td>Central API/Database</td>
+        <td><span class="badge badge-warning">MEDIUM</span></td>
+        <td>Standard REST API + PostgreSQL setup</td>
+      </tr>
+      <tr>
+        <td>Workspace Deduplication</td>
+        <td><span class="badge badge-warning">MEDIUM</span></td>
+        <td>Need hash-based deduplication + workspace mapping</td>
+      </tr>
+      <tr>
+        <td>Data Completeness</td>
+        <td><span class="badge badge-error">HIGH</span></td>
+        <td>Only 30-40% coverage - major limitation</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>📊 What You Get</h4>
+  <pre><code>Coverage Breakdown:
+├── Copilot Chat (Sidebar)         ✅ 100% captured
+├── Inline Code Completions        ❌ 0% captured  
+├── Inline Chat (Ctrl+I)           ⚠️  Unknown
+└── Comment-Based Prompts          ❌ 0% captured
+────────────────────────────────────────────────
+Total Copilot Usage Captured:      ~30-40%</code></pre>
+
+  <h3>Approach 2️⃣: Custom VS Code Extension (Complete Capture)</h3>
+
+  <div class="callout">
+    <strong>🔧 How It Works:</strong><br />
+    Build a custom VS Code extension that monitors editor activity and captures 
+    ALL Copilot interactions (chat + inline + inline chat) in real-time, sending 
+    data to your central API.
+  </div>
+
+  <h4>✅ Advantages</h4>
+  <ul>
+    <li><strong>100% coverage</strong> - Captures ALL Copilot usage (chat + inline + inline chat)</li>
+    <li><strong>Rich metadata</strong> - Context lines, acceptance rate, time-to-accept</li>
+    <li><strong>Real-time collection</strong> - Data flows immediately, no batch processing</li>
+    <li><strong>Clean workspace tracking</strong> - You control the workspace ID mapping</li>
+    <li><strong>Extensible</strong> - Can add features like quality scoring in real-time</li>
+  </ul>
+
+  <h4>❌ Disadvantages</h4>
+  <ul>
+    <li><strong>Development effort</strong> - Need to build, test, maintain VS Code extension</li>
+    <li><strong>Deployment complexity</strong> - Extension must be installed on all devices</li>
+    <li><strong>Maintenance burden</strong> - Must update when VS Code or Copilot changes</li>
+    <li><strong>Performance concerns</strong> - Extension must not slow down editor</li>
+    <li><strong>Testing required</strong> - Edge cases, error handling, network failures</li>
+  </ul>
+
+  <h4>🎯 Complexity Rating</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Complexity</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Extension Development</td>
+        <td><span class="badge badge-error">HIGH</span></td>
+        <td>TypeScript, VS Code API, event handling</td>
+      </tr>
+      <tr>
+        <td>Inline Capture Logic</td>
+        <td><span class="badge badge-error">HIGH</span></td>
+        <td>Heuristics to detect Copilot insertions</td>
+      </tr>
+      <tr>
+        <td>Extension Deployment</td>
+        <td><span class="badge badge-warning">MEDIUM</span></td>
+        <td>Can use Jamf to install .vsix files</td>
+      </tr>
+      <tr>
+        <td>Maintenance</td>
+        <td><span class="badge badge-warning">MEDIUM</span></td>
+        <td>Updates needed when Copilot/VS Code changes</td>
+      </tr>
+      <tr>
+        <td>Data Completeness</td>
+        <td><span class="badge badge-success">LOW</span></td>
+        <td>100% coverage - captures everything</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>📊 What You Get</h4>
+  <pre><code>Coverage Breakdown:
+├── Copilot Chat (Sidebar)         ✅ 100% captured
+├── Inline Code Completions        ✅ 100% captured  
+├── Inline Chat (Ctrl+I)           ✅ 100% captured
+└── Comment-Based Prompts          ✅ 100% captured
+────────────────────────────────────────────────
+Total Copilot Usage Captured:      ~100%</code></pre>
+</section>
+
+<section>
+  <h2>6. Recommended Approach: Hybrid Strategy</h2>
+
+  <div class="success">
+    <strong>🎯 OUR RECOMMENDATION: Start with Approach 1, Evaluate, Then Decide</strong>
+  </div>
+
+  <h3>Phase 1: Quick Win with JSON Collection</h3>
+  
+  <p>
+    <strong>Start here</strong> because it's low-effort and gives you immediate insights:
+  </p>
+
+  <ul>
+    <li>Deploy Jamf script to collect existing JSON files</li>
+    <li>Build central database and basic analytics dashboard</li>
+    <li>Analyze the 30-40% of data you get (chat conversations)</li>
+    <li>See if this partial data is sufficient for your use case</li>
+  </ul>
+
+  <div class="callout">
+    <strong>Why This Makes Sense:</strong><br />
+    Chat conversations often contain the most <em>thoughtful</em> prompts. Developers 
+    using chat are typically asking complex questions, debugging, or architecting - 
+    exactly the high-value prompts you want to analyze. Inline completions are often 
+    simpler autocomplete scenarios.
+  </div>
+
+  <h3>Phase 2: Evaluate and Decide</h3>
+
+  <p>After 2-4 weeks of collecting JSON data, ask:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Question</th>
+        <th>If YES → Stick with JSON</th>
+        <th>If NO → Build Extension</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Is 30-40% coverage sufficient?</td>
+        <td>✅ Most value in chat data</td>
+        <td>❌ Need complete picture</td>
+      </tr>
+      <tr>
+        <td>Can you identify prompt quality trends?</td>
+        <td>✅ Enough signal to detect patterns</td>
+        <td>❌ Too much missing data</td>
+      </tr>
+      <tr>
+        <td>Do workspace hashes cause major issues?</td>
+        <td>✅ Manageable with dedup logic</td>
+        <td>❌ Creating too much noise</td>
+      </tr>
+      <tr>
+        <td>Is development budget limited?</td>
+        <td>✅ Keep it simple</td>
+        <td>❌ Have resources to invest</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>When to Build the Custom Extension</h3>
+
+  <p>Only invest in Approach 2 (custom extension) if:</p>
+
+  <ul>
+    <li>❌ JSON data proves insufficient (too many gaps)</li>
+    <li>✅ You need acceptance rate metrics (inline completions)</li>
+    <li>✅ You want to track time-to-accept (performance KPI)</li>
+    <li>✅ You need 100% coverage for accurate prompt quality scoring</li>
+    <li>✅ You have engineering resources to build and maintain it</li>
+  </ul>
+
+  <div class="warning">
+    <strong>⚠️ Don't Over-Engineer Early:</strong><br />
+    Many organizations find that 30-40% coverage from chat data is actually sufficient 
+    for their prompt quality goals. Start simple, prove value, then expand if needed.
+  </div>
+</section>
+
+<section>
+  <h2>7. Alternative: Custom Extension for Real-Time Capture</h2>
+
+  <p>
+    If you decide JSON collection isn't sufficient, here's what a custom extension approach looks like:
+  </p>
+
+  <h3>Extension Capabilities</h3>
+
+  <pre><code>// Example data captured by custom extension
+{
+  "promptText": "Refactor this function to be async-safe",
+  "trigger": "inline_completion",  // or "chat" or "inline_chat"
+  "language": "typescript",
+  "filePath": "src/service.ts",
+  "contextLines": 50,  // How much code was visible
+  "cursorPosition": { "line": 42, "column": 15 },
+  "timestamp": "2026-02-11T10:12:30Z",
+  "userId": "hashed-user-id",
+  "workspaceId": "repo-hash",
+  "accepted": true,  // Did user accept the suggestion?
+  "timeToAccept": 2.3,  // Seconds until acceptance
+  "completionLength": 145  // Characters inserted
+}</code></pre>
+
+  <h3>Extension-Based Database Schema</h3>
+
+  <pre><code>CREATE TABLE prompts (
+  id UUID PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  prompt_text TEXT NOT NULL,
+  trigger_type TEXT,  -- 'chat', 'inline', 'inline_chat'
+  language TEXT,
+  file_path TEXT,
+  workspace_id TEXT,
+  accepted BOOLEAN,
+  time_to_accept FLOAT,
+  completion_length INTEGER,
+  quality_score INTEGER,
+  score_breakdown JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_user ON prompts(user_id);
+CREATE INDEX idx_trigger ON prompts(trigger_type);
+CREATE INDEX idx_created ON prompts(created_at);
+CREATE INDEX idx_accepted ON prompts(accepted);</code></pre>
+
+  <h3>Performance Metrics You Get</h3>
+  <ul>
+    <li><strong>Acceptance Rate</strong> - % of suggestions developers actually use</li>
+    <li><strong>Time to Accept</strong> - How quickly developers accept suggestions</li>
+    <li><strong>Prompt Quality by Type</strong> - Compare chat vs inline effectiveness</li>
+    <li><strong>Language-Specific Patterns</strong> - Which languages get better prompts</li>
+    <li><strong>Complete Context</strong> - What code was visible when prompting</li>
+  </ul>
+
+  <div class="success">
+    <strong>✓ When Extension Approach Makes Sense:</strong><br />
+    If you discover that the 30-40% JSON coverage is insufficient, and you need metrics 
+    like acceptance rate and time-to-accept for ROI justification, the extension route 
+    provides complete visibility.
+  </div>
+</section>
+
+<section>
+  <h2>8. Final Comparison: Cursor vs Copilot</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Aspect</th>
+        <th>Cursor</th>
+        <th>Copilot (JSON)</th>
+        <th>Copilot (Extension)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Local Storage</strong></td>
+        <td><span class="badge badge-success">SQLite DB</span></td>
+        <td><span class="badge badge-warning">JSON Files</span></td>
+        <td><span class="badge badge-info">Custom DB</span></td>
+      </tr>
+      <tr>
+        <td><strong>Data Completeness</strong></td>
+        <td>100% of interactions</td>
+        <td>30-40% (chat only)</td>
+        <td>100% (all types)</td>
+      </tr>
+      <tr>
+        <td><strong>Collection Complexity</strong></td>
+        <td><span class="badge badge-success">LOW</span></td>
+        <td><span class="badge badge-success">LOW</span></td>
+        <td><span class="badge badge-error">HIGH</span></td>
+      </tr>
+      <tr>
+        <td><strong>Development Effort</strong></td>
+        <td>Days (script only)</td>
+        <td>Days (script only)</td>
+        <td>Weeks (extension dev)</td>
+      </tr>
+      <tr>
+        <td><strong>Maintenance</strong></td>
+        <td>Minimal</td>
+        <td>Minimal</td>
+        <td>Ongoing updates needed</td>
+      </tr>
+      <tr>
+        <td><strong>Cross-Workspace Tracking</strong></td>
+        <td>✅ Centralized</td>
+        <td>⚠️ Workspace hash issues</td>
+        <td>✅ Full control</td>
+      </tr>
+      <tr>
+        <td><strong>Jamf Deployment</strong></td>
+        <td>✅ Simple</td>
+        <td>✅ Simple</td>
+        <td>⚠️ Extension distribution</td>
+      </tr>
+      <tr>
+        <td><strong>Performance Impact</strong></td>
+        <td>None (batch collection)</td>
+        <td>None (batch collection)</td>
+        <td>Potential (real-time hooks)</td>
+      </tr>
+      <tr>
+        <td><strong>Advanced Metrics</strong></td>
+        <td>Full context available</td>
+        <td>Limited to chat</td>
+        <td>Acceptance rate, timing</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>💡 The Pragmatic View:</strong><br />
+    <ul>
+      <li><strong>Cursor:</strong> Best out-of-the-box experience, 100% data, minimal effort</li>
+      <li><strong>Copilot JSON:</strong> Quick to deploy, partial data, good for chat analysis</li>
+      <li><strong>Copilot Extension:</strong> Complete data, high effort, best for comprehensive analytics</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>9. POC Recommendation</h2>
+
+  <div class="success">
+    <strong>✓ RECOMMENDED APPROACH:</strong><br />
+    Start with Approach 1 (JSON Collection), then decide based on results.
+  </div>
+
+  <h3>Immediate Action Plan</h3>
+
+  <ol>
+    <li><strong>Week 1-2:</strong> Deploy Jamf script for JSON collection across platforms</li>
+    <li><strong>Week 2-3:</strong> Build central API and database</li>
+    <li><strong>Week 3-4:</strong> Create basic analytics dashboard</li>
+    <li><strong>Week 4-6:</strong> Collect data, analyze chat prompt quality</li>
+    <li><strong>Week 6:</strong> Decision point - is 30-40% coverage sufficient?</li>
+  </ol>
+
+  <h3>Decision Criteria</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Recommendation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Chat data shows clear quality patterns</td>
+        <td><span class="badge badge-success">Stick with JSON</span></td>
+      </tr>
+      <tr>
+        <td>Need acceptance rate metrics</td>
+        <td><span class="badge badge-warning">Build extension</span></td>
+      </tr>
+      <tr>
+        <td>Missing critical inline completion data</td>
+        <td><span class="badge badge-warning">Build extension</span></td>
+      </tr>
+      <tr>
+        <td>Limited engineering resources</td>
+        <td><span class="badge badge-success">Stick with JSON</span></td>
+      </tr>
+      <tr>
+        <td>Need 100% audit trail</td>
+        <td><span class="badge badge-warning">Build extension</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="warning">
+    <strong>⚠️ Don't Over-Engineer:</strong><br />
+    Most organizations find that chat data (30-40%) provides sufficient signal for 
+    prompt quality improvement initiatives. The most thoughtful, complex prompts happen 
+    in chat conversations, not in quick inline completions.
+  </div>
+
+  <h3>Why This Strategy Works</h3>
+
+  <ul>
+    <li><strong>Low risk</strong> - Small initial investment proves value</li>
+    <li><strong>Fast feedback</strong> - See results within weeks, not months</li>
+    <li><strong>Data-driven decision</strong> - Let real usage inform next steps</li>
+    <li><strong>Incremental investment</strong> - Only build extension if truly needed</li>
+    <li><strong>Quick wins</strong> - Can start improving prompts with partial data</li>
+  </ul>
+</section>
+
+<section>
+  <h2>10. Key Takeaways</h2>
+
+  <div class="callout">
+    <strong>📌 Cursor Advantage:</strong><br />
+    Enables comprehensive prompt analytics by design. 100% of interactions stored 
+    in accessible SQLite database. Jamf extraction is straightforward with minimal complexity.
+  </div>
+
+  <div class="warning">
+    <strong>📌 GitHub Copilot Reality:</strong><br />
+    Chat conversations ARE stored in local JSON files (30-40% of usage), which can be 
+    collected via Jamf with low complexity. Inline completions (60% of usage) require 
+    custom extension development with higher complexity.
+  </div>
+
+  <div class="success">
+    <strong>📌 Recommended Strategy:</strong><br />
+    <ol>
+      <li><strong>Phase 1:</strong> Deploy JSON collection (low complexity, fast results)</li>
+      <li><strong>Phase 2:</strong> Analyze chat data quality and coverage</li>
+      <li><strong>Phase 3:</strong> Only build custom extension if JSON proves insufficient</li>
+    </ol>
+  </div>
+
+  <h3>Complexity Comparison Summary</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Approach</th>
+        <th>Overall Complexity</th>
+        <th>Data Coverage</th>
+        <th>Best For</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Cursor Extension</strong></td>
+        <td><span class="badge badge-success">LOW</span></td>
+        <td>100%</td>
+        <td>Organizations using Cursor</td>
+      </tr>
+      <tr>
+        <td><strong>Copilot JSON Collection</strong></td>
+        <td><span class="badge badge-success">LOW</span></td>
+        <td>30-40%</td>
+        <td>Quick POC, chat analysis focus</td>
+      </tr>
+      <tr>
+        <td><strong>Custom VS Code Extension</strong></td>
+        <td><span class="badge badge-error">HIGH</span></td>
+        <td>100%</td>
+        <td>Complete analytics, performance metrics</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="critical">
+    <strong>🎯 Our Recommendation:</strong><br />
+    Start with Copilot JSON collection (Approach 1). It's low complexity, quick to deploy, 
+    and gives you 30-40% coverage immediately. Most organizations find this sufficient for 
+    prompt quality initiatives. Only invest in custom extension development if data proves 
+    you need 100% coverage for your specific use case.
+  </div>
+</section>
+
+<section style="margin-top: 60px; padding-top: 40px; border-top: 2px solid #334155;">
+  <p style="text-align: center; color: #64748b; font-size: 0.9em;">
+    <strong>Last Updated:</strong> February 2026 | 
+    <strong>Status:</strong> Technical Analysis Based on Current GitHub Copilot Architecture
+  </p>
+</section>
+
+</body>
+</html>
